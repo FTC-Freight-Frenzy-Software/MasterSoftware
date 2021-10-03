@@ -1,8 +1,7 @@
 ## NOTICE
 
 This repository contains the public FTC SDK for the Freight Frenzy (2021-2022) competition season.
-Shortcut to TeamCode folder: https://github.com/brad182/FtcRobotController/tree/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode
-
+Shortcut to TeamCode folder: https://github.com/FTC-Freight-Frenzy-Software/MasterSoftware/tree/20210915-141025-release-candidate/TeamCode/src/main/java/org/firstinspires/ftc/teamcode
 ## Welcome!
 This GitHub repository contains the source code that is used to build an Android app to control a *FIRST* Tech Challenge competition robot.  To use this SDK, download/clone the entire project to your local computer.
 
