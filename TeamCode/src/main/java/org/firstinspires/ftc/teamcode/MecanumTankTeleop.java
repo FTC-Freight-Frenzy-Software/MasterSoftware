@@ -40,7 +40,7 @@ public class MecanumTankTeleop extends LinearOpMode {
             double v1 = r2 * Math.cos(robotAngle2) + rightX;
             double v2 = r2 * Math.sin(robotAngle2) - rightX;
 
-            //
+            // add comment
             frontLeftMotor.setPower(speed[speedPointer] * direction[directionPointer] * v3);
             backLeftMotor.setPower(speed[speedPointer] * direction[directionPointer] * v4);
             frontRightMotor.setPower(speed[speedPointer] * direction[directionPointer] * v2);
