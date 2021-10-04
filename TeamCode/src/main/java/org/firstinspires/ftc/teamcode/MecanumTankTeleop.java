@@ -1,16 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(name = "Mecanum Tank Teleop", group = "LinearOpMode")
 
 public class MecanumTankTeleop extends LinearOpMode {
-    // declare motors
-    DcMotor frontLeftMotor;
-    DcMotor frontRightMotor;
-    DcMotor backLeftMotor;
-    DcMotor backRightMotor;
+    RobotHardware robot = new RobotHardware();
+
 
     static int[] direction = {1, -1};
     static double[] speed = {1.0, 0.25};
@@ -41,23 +37,23 @@ public class MecanumTankTeleop extends LinearOpMode {
             double v2 = r2 * Math.sin(robotAngle2) - rightX;
 
             // add comment
-            frontLeftMotor.setPower(speed[speedPointer] * direction[directionPointer] * v3);
-            backLeftMotor.setPower(speed[speedPointer] * direction[directionPointer] * v4);
-            frontRightMotor.setPower(speed[speedPointer] * direction[directionPointer] * v2);
-            backRightMotor.setPower(speed[speedPointer] * direction[directionPointer] * v1);
+            robot.frontLeftMotor.setPower(speed[speedPointer] * direction[directionPointer] * v3);
+            robot.backLeftMotor.setPower(speed[speedPointer] * direction[directionPointer] * v4);
+            robot.frontRightMotor.setPower(speed[speedPointer] * direction[directionPointer] * v2);
+            robot.backRightMotor.setPower(speed[speedPointer] * direction[directionPointer] * v1);
 
             while (gamepad1.dpad_left) {  // while dpad left is held down
                 robot.frontLeftMotor.setPower(-1);  // set the target position
-                robot.backLeftMotor.setTargetPosition(1);
-                robot.frontRightMotor.setTargetPosition(1);
-                robot.backRightMotor.setTargetPosition(-1);
+                robot.backLeftMotor.setPower(1);
+                robot.frontRightMotor.setPower(1);
+                robot.backRightMotor.setPower(-1);
             }
 
             while (gamepad1.dpad_right) {  // while dpad right is held down
                 robot.frontLeftMotor.setPower(1);  // set the target position
-                robot.backLeftMotor.setTargetPosition(-1);
-                robot.frontRightMotor.setTargetPosition(-1);
-                robot.backRightMotor.setTargetPosition(1);
+                robot.backLeftMotor.setPower(-1);
+                robot.frontRightMotor.setPower(-1);
+                robot.backRightMotor.setPower(1);
             }
 
             if (gamepad1.x) {  // toggle speedPointer

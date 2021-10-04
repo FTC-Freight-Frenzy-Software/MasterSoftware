@@ -8,8 +8,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class RobotHardware { // the hardware map
     // drivetrain motors
@@ -41,7 +39,7 @@ public class RobotHardware { // the hardware map
 
         // front right motor
         frontRightMotor = hwMap.get(DcMotor.class, "frontRightMotor");
-        frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRightMotor.setPower(0.0);
 
