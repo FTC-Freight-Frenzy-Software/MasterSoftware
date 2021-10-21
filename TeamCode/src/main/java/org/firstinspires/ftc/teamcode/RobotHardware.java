@@ -5,6 +5,7 @@ Onbot Java: 192.168.43.1:8080
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -16,11 +17,13 @@ public class RobotHardware { // the hardware map
     public DcMotor backLeftMotor = null;
     public DcMotor backRightMotor = null;
 
-    /*
+    static CRServo carouselServo;
+
+
     public DcMotor intakeMotor = null;
-    public DcMotor transferMotor = null;
-    public DcMotor wheelMotor = null;
-     */
+    public DcMotor liftMotor = null;
+    //public DcMotor wheelMotor = null;
+
 
     HardwareMap hwMap = null;
 
@@ -33,19 +36,19 @@ public class RobotHardware { // the hardware map
 
         // front left motor
         frontLeftMotor = hwMap.get(DcMotor.class, "frontLeftMotor");  // initialize the motor
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);  // set as forward
+        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);  // set as forward
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // do not use encoders for this
         frontLeftMotor.setPower(0.0);  // initialize to no power
 
         // front right motor
         frontRightMotor = hwMap.get(DcMotor.class, "frontRightMotor");
-        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRightMotor.setPower(0.0);
 
         // back left motor
         backLeftMotor = hwMap.get(DcMotor.class, "backLeftMotor");
-        backLeftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftMotor.setPower(0.0);
 
@@ -55,25 +58,30 @@ public class RobotHardware { // the hardware map
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightMotor.setPower(0.0);
 
-        /*
-        // intake motor
+        // carousel servo
+        carouselServo = hwMap.get(CRServo.class, "carouselServo");
+        carouselServo.setDirection(CRServo.Direction.FORWARD);
+
+        //intake motor
         intakeMotor = hwMap.get(DcMotor.class, "intakeMotor");
-        intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intakeMotor.setPower(0.0);
 
         // transfer motor
-        transferMotor = hwMap.get(DcMotor.class, "transferMotor");
-        transferMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        transferMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        transferMotor.setPower(0.0);
+        liftMotor = hwMap.get(DcMotor.class, "liftMotor");
+        liftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor.setPower(0.0);
 
+        /*
         // wheel motor
         wheelMotor = hwMap.get(DcMotor.class, "wheelMotor");
         wheelMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         wheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         wheelMotor.setPower(0.0);
          */
+
     }
 
 }

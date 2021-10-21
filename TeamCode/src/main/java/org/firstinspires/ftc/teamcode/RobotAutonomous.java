@@ -1,25 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import java.lang.annotation.Target;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.util.Hardware;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.Servo;
-import java.util.List;
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 
 // test 
 @Autonomous (name = "Robot Autonomous", group = "Autonomous")
@@ -30,6 +14,7 @@ public class RobotAutonomous extends LinearOpMode {
     public final double ticksPerRevolution = 537.6;  // the ticks per revolution for our motors, the REV HEX Planetary 20:1
     public final double wheelDiameter = 2.953;  // small mecanum wheels are 75 millimeters in diameter
     public final double power = 1.0;
+    public final double ROTATE_CONSTANT = 10.0;
 
     public void driveForward (double inches) {  // drives the robot forward given a distance
         robot.frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
@@ -183,10 +168,62 @@ public class RobotAutonomous extends LinearOpMode {
         robot.backRightMotor.setPower(0);
     }
 
+    public void rotateRight (int degrees) {
+        robot.frontLeftMotor.setPower(1);
+        robot.backLeftMotor.setPower(1);
+        robot.frontRightMotor.setPower(-1);
+        robot.backRightMotor.setPower(-1);
+
+        sleep((int) (degrees * ROTATE_CONSTANT));
+
+        robot.frontLeftMotor.setPower(0);
+        robot.backLeftMotor.setPower(0);
+        robot.frontRightMotor.setPower(0);
+        robot.backRightMotor.setPower(0);
+    }
+
+    public void rotateLeft (int degrees) {
+        robot.frontLeftMotor.setPower(-1);
+        robot.backLeftMotor.setPower(-1);
+        robot.frontRightMotor.setPower(1);
+        robot.backRightMotor.setPower(1);
+
+        sleep((int) (degrees * ROTATE_CONSTANT));
+
+        robot.frontLeftMotor.setPower(0);
+        robot.backLeftMotor.setPower(0);
+        robot.frontRightMotor.setPower(0);
+        robot.backRightMotor.setPower(0);
+    }
+
+    public void spinWheel(double seconds) {
+        robot.carouselServo.setPower(1);
+        sleep((int) (seconds * 1000));  // convert to milliseconds
+        robot.carouselServo.setPower(0);
+    }
+
+    public void redLeftAutonomous () {
+
+    }
+
+    public void redRightAutonomous () {
+        driveForward(5);  // go very slightly forward from starting spot
+        rotateRight(100);  // rotate 100 degrees to the right
+        driveForward(36);  // drive to carousel
+        spinWheel(2);  // spin the wheel for 2 seconds
+
+    }
+
+    public void blueLeftAutonomous () {
+
+    }
+
+    public void blueRightAutonomous () {
+
+    }
+
     public void runOpMode() throws InterruptedException {
-        driveForward(10);
-        strafeRight(10);
-        driveBackwards(10);
-        strafeLeft(10);
+        CRServo s = hardwareMap.get(CRServo.class, "servo");
+
     }
 }
