@@ -38,25 +38,6 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import java.lang.annotation.Target;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.util.Hardware;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.Servo;
-import java.util.List;
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-
 
 import java.util.List;
 
@@ -103,8 +84,7 @@ public class VisionAutonomous extends LinearOpMode {
      * Once you've obtained a license key, copy the string from the Vuforia web site
      * and paste it in to your code on the next line, between the double quotes.
      */
-    private static final String VUFORIA_KEY =
-            " -- YOUR NEW VUFORIA KEY GOES HERE  --- ";
+    private static final String VUFORIA_KEY = "AQQmsVn/////AAABmQjk2+3dZE+Tk5oj3L8j0DJvG4NWcCztbIl7BYnLuRUbBBF7ocAhc5kq25SO33annXS4Vn8kAruErc1ETaO+pralkAh4QcvBa9mL4/g+e01KmfAIBGHsJzRIHoravhIvOhdHODQzQu77u3h/hYmD9MSFE+e5d+yQOmWTl5dKZWUwLMiYY4KEXtOMTkP99vK3Jk8lINPpyDyFp6cDrxSpwz7rs9A8HCD8aXiuK8RDRyc3bTEe7aphVTrEzWADQHMwozaegUBlgtnAtlMHa4Ea8Hl21jWRu00haLb9lVNTsIyak5h8ZeJFcGj17AxYQ+iYt6YihHPw2MOrQzFhSKL+NwjWlDYHjlcehVjQ9Xq2d4xo";
 
     /**
      * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
@@ -129,6 +109,10 @@ public class VisionAutonomous extends LinearOpMode {
          * Activate TensorFlow Object Detection before we wait for the start command.
          * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
          **/
+
+        driveForward(10);
+        driveBackwards(10);
+
         if (tfod != null) {
             tfod.activate();
 
@@ -144,21 +128,19 @@ public class VisionAutonomous extends LinearOpMode {
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
+
+        String vision = sense();
         waitForStart();
 
-        if (opModeIsActive()) {
-            while (opModeIsActive()) {
 
-            }
-        }
     }
 
     /**
      * Initialize the Vuforia localization engine.
      */
 
-    public String[] sense () {
-        String[] positions = new String[2];
+    public String sense () {
+        String position = "";
         if (tfod != null) {
             // getUpdatedRecognitions() will return null if no new information is available since
             // the last time that call was made.
@@ -175,13 +157,33 @@ public class VisionAutonomous extends LinearOpMode {
                             recognition.getRight(), recognition.getBottom());
                     i++;
 
-                    position = recognition.getLabel();
+                    int height = recognition.getImageHeight();
+                    int width = recognition.getImageWidth();
 
+                    telemetry.addData("height", height);
+                    telemetry.addData("width", width);
+                    telemetry.update();
+
+                    /*
+                    if (height < 100) {
+                        position = "Closest";
+                        return position;
+                    }
+                    else if (height < 250) {
+                        position = "Middle";
+                        return position;
+                    }
+                    else {
+                        position = "Farthest";
+                        return position;
+                    }
+                    */
                 }
 
                 telemetry.update();
             }
         }
+        return "closest";
     }
     private void initVuforia() {
         /*
@@ -406,10 +408,6 @@ public class VisionAutonomous extends LinearOpMode {
         robot.carouselServo.setPower(0);
     }
 
-    public void redLeftAutonomous () {
-
-    }
-
     public void redRightAutonomous () {
         driveForward(5);  // go very slightly forward from starting spot
         rotateRight(100);  // rotate 100 degrees to the right
@@ -418,11 +416,5 @@ public class VisionAutonomous extends LinearOpMode {
 
     }
 
-    public void blueLeftAutonomous () {
 
-    }
-
-    public void blueRightAutonomous () {
-
-    }
 }

@@ -18,7 +18,7 @@ public class RobotHardware { // the hardware map
     public DcMotor backRightMotor = null;
 
     static CRServo carouselServo;
-
+    static CRServo boxServo;
 
     public DcMotor intakeMotor = null;
     public DcMotor liftMotor = null;
@@ -58,6 +58,11 @@ public class RobotHardware { // the hardware map
         backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightMotor.setPower(0.0);
 
+        // box servo
+        boxServo = hwMap.get(CRServo.class, "boxServo");
+        boxServo.setDirection(CRServo.Direction.FORWARD);
+
+
         // carousel servo
         carouselServo = hwMap.get(CRServo.class, "carouselServo");
         carouselServo.setDirection(CRServo.Direction.FORWARD);
@@ -68,7 +73,7 @@ public class RobotHardware { // the hardware map
         intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intakeMotor.setPower(0.0);
 
-        // transfer motor
+        // lift motor
         liftMotor = hwMap.get(DcMotor.class, "liftMotor");
         liftMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
