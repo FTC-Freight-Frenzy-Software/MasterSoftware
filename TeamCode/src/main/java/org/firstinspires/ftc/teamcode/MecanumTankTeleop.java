@@ -107,27 +107,38 @@ public class MecanumTankTeleop extends LinearOpMode {
                 liftMotor.setPower(0);
             }
 
-            if (gamepad2.left_trigger > 0) {  // intake
+            if (gamepad1.left_trigger > 0) {  // intake
                 intakeMotor.setPower(1);
             }
-            else if (gamepad2.left_bumper) {  // extake
+            else if (gamepad1.left_bumper) {  // extake
                 intakeMotor.setPower(-1);
             }
             else {
                 intakeMotor.setPower(0);
             }
 
-            if (gamepad2.b) {  // spin carousel
+            if (gamepad2.a) {  // spin carousel
                 carouselServo.setPower(1);
+            }
+            else if (gamepad2.b) {
+                carouselServo.setPower(-1);
             }
             else {
                 carouselServo.setPower(0);
             }
 
-            if (gamepad2.left_trigger > 0) {
+            if (gamepad2.x) {
                 boxServo.setPosition(1);
                 sleep(1000);
                 boxServo.setPosition(0);
+            }
+
+            if (gamepad1.a) {
+                speedPointer = (speedPointer + 1) % 2;
+            }
+
+            if (gamepad1.b) {
+                directionPointer = (directionPointer + 1) % 2;
             }
         }
     }

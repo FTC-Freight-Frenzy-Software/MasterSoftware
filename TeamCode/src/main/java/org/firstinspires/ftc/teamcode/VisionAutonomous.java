@@ -31,7 +31,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -63,7 +65,19 @@ public class VisionAutonomous extends LinearOpMode {
    *  Two additional model assets are available which only contain a subset of the objects:
    *  FreightFrenzy_BC.tflite  0: Ball,  1: Cube
    *  FreightFrenzy_DM.tflite  0: Duck,  1: Marker
+   *
+   *
    */
+
+    public DcMotor backLeftMotor = null;
+    public DcMotor frontLeftMotor = null;
+    public DcMotor backRightMotor = null;
+    public DcMotor frontRightMotor = null;
+    public DcMotor intakeMotor = null;
+    public DcMotor liftMotor = null;
+    public CRServo carouselServo = null;
+    public Servo boxServo = null;
+
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
       "Ball",
@@ -100,6 +114,14 @@ public class VisionAutonomous extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        backLeftMotor = hardwareMap.get(DcMotor.class, "backLeftMotor");
+        frontLeftMotor = hardwareMap.get(DcMotor.class, "frontLeftMotor");
+        backRightMotor = hardwareMap.get(DcMotor.class, "backRightMotor");
+        frontRightMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+        liftMotor = hardwareMap.get(DcMotor.class, "liftMotor");
+        carouselServo = hardwareMap.get(CRServo.class, "carouselServo");
+        boxServo = hardwareMap.get(Servo.class, "boxServo");
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
         initVuforia();
@@ -110,9 +132,6 @@ public class VisionAutonomous extends LinearOpMode {
          * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
          **/
 
-        driveForward(10);
-        driveBackwards(10);
-
         if (tfod != null) {
             tfod.activate();
 
@@ -122,14 +141,16 @@ public class VisionAutonomous extends LinearOpMode {
             // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
             // should be set to the value of the images used to create the TensorFlow Object Detection model
             // (typically 16/9).
-            tfod.setZoom(2.5, 16.0/9.0);
+            tfod.setZoom(1.5, 16.0/9.0);
         }
 
         /** Wait for the game to begin */
-        telemetry.addData(">", "Press Play to start op mode");
+        telemetry.addData("Autonomous Program Initialized", "Press Play to start op mode");
         telemetry.update();
 
         String vision = sense();
+        telemetry.addData("Vision", vision);
+        telemetry.update();
         waitForStart();
 
 
@@ -157,12 +178,15 @@ public class VisionAutonomous extends LinearOpMode {
                             recognition.getRight(), recognition.getBottom());
                     i++;
 
-                    int height = recognition.getImageHeight();
-                    int width = recognition.getImageWidth();
+                        int height = recognition.getImageHeight();
+                        int width = recognition.getImageWidth();
 
-                    telemetry.addData("height", height);
-                    telemetry.addData("width", width);
-                    telemetry.update();
+                        telemetry.addData("height", height);
+                        telemetry.addData("width", width);
+                        telemetry.update();
+
+                        return Integer.toString(recognition.getImageHeight());
+
 
                     /*
                     if (height < 100) {
@@ -180,7 +204,6 @@ public class VisionAutonomous extends LinearOpMode {
                     */
                 }
 
-                telemetry.update();
             }
         }
         return "closest";
@@ -214,7 +237,6 @@ public class VisionAutonomous extends LinearOpMode {
        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
     }
 
-    static RobotHardware robot = new RobotHardware();
 
     // motor values
     public final double ticksPerRevolution = 537.6;  // the ticks per revolution for our motors, the REV HEX Planetary 20:1
@@ -223,74 +245,74 @@ public class VisionAutonomous extends LinearOpMode {
     public final double ROTATE_CONSTANT = 10.0;
 
     public void driveForward (double inches) {  // drives the robot forward given a distance
-        robot.frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
-        robot.backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // TRY NEW ENCODER CABLE
-        robot.backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
+        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // TRY NEW ENCODER CABLE
+        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         double circumference = Math.PI * wheelDiameter;
         double rotationsNeeded = inches / circumference;  // calculate the rotations needed based on the circumference
         int encoderDrive = (int) (rotationsNeeded * ticksPerRevolution);  // calculate the total ticks, cast to int
 
-        robot.frontLeftMotor.setTargetPosition(encoderDrive);  // set the target position
-        robot.backLeftMotor.setTargetPosition(encoderDrive);
-        robot.frontRightMotor.setTargetPosition(encoderDrive);
-        robot.backRightMotor.setTargetPosition(encoderDrive);
+        frontLeftMotor.setTargetPosition(encoderDrive);  // set the target position
+        backLeftMotor.setTargetPosition(encoderDrive);
+        frontRightMotor.setTargetPosition(encoderDrive);
+        backRightMotor.setTargetPosition(encoderDrive);
 
-        robot.frontLeftMotor.setPower(power);  // set power that will be used, use full speed
-        robot.backLeftMotor.setPower(power);
-        robot.frontRightMotor.setPower(power);
-        robot.backRightMotor.setPower(power);
+        frontLeftMotor.setPower(power);  // set power that will be used, use full speed
+        backLeftMotor.setPower(power);
+        frontRightMotor.setPower(power);
+        backRightMotor.setPower(power);
 
-        robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
-        robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
-        while (robot.frontLeftMotor.isBusy() || robot.backLeftMotor.isBusy() || robot.frontRightMotor.isBusy() || robot.backRightMotor.isBusy()) {  // wait
+        while (frontLeftMotor.isBusy() || backLeftMotor.isBusy() || frontRightMotor.isBusy() || backRightMotor.isBusy()) {  // wait
 
         }
 
-        robot.frontLeftMotor.setPower(0);  // reset power to 0
-        robot.backLeftMotor.setPower(0);
-        robot.frontRightMotor.setPower(0);
-        robot.backRightMotor.setPower(0);
+        frontLeftMotor.setPower(0);  // reset power to 0
+        backLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backRightMotor.setPower(0);
     }
 
     public void driveBackwards (double inches) {  // given a distance, drive the robot backwards
-        robot.frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
-        robot.backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
+        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         double circumference = Math.PI * wheelDiameter;
         double rotationsNeeded = inches / circumference;  // calculate the rotations needed based on the circumference
         int encoderDrive = (int)(rotationsNeeded * ticksPerRevolution);  // calculate the total ticks, cast to int
 
-        robot.frontLeftMotor.setTargetPosition(-encoderDrive);  // set the target position, use negative because we are driving backwards
-        robot.backLeftMotor.setTargetPosition(-encoderDrive);
-        robot.frontRightMotor.setTargetPosition(-encoderDrive);
-        robot.backRightMotor.setTargetPosition(-encoderDrive);
+        frontLeftMotor.setTargetPosition(-encoderDrive);  // set the target position, use negative because we are driving backwards
+        backLeftMotor.setTargetPosition(-encoderDrive);
+        frontRightMotor.setTargetPosition(-encoderDrive);
+        backRightMotor.setTargetPosition(-encoderDrive);
 
-        robot.frontLeftMotor.setPower(power);  // set power that will be used, use full speed
-        robot.backLeftMotor.setPower(power);
-        robot.frontRightMotor.setPower(power);
-        robot.backRightMotor.setPower(power);
+        frontLeftMotor.setPower(power);  // set power that will be used, use full speed
+        backLeftMotor.setPower(power);
+        frontRightMotor.setPower(power);
+        backRightMotor.setPower(power);
 
-        robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
-        robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        while (robot.frontLeftMotor.isBusy() || robot.backLeftMotor.isBusy() || robot.frontRightMotor.isBusy() || robot.backRightMotor.isBusy()) {  // wait
+        while (frontLeftMotor.isBusy() || backLeftMotor.isBusy() || frontRightMotor.isBusy() || backRightMotor.isBusy()) {  // wait
 
         }
 
-        robot.frontLeftMotor.setPower(0);  // reset power to 0
-        robot.backLeftMotor.setPower(0);
-        robot.frontRightMotor.setPower(0);
-        robot.backRightMotor.setPower(0);
+        frontLeftMotor.setPower(0);  // reset power to 0
+        backLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backRightMotor.setPower(0);
     }
 
     /* in mecanum wheels, if the front wheels and the back wheels are
@@ -299,39 +321,39 @@ public class VisionAutonomous extends LinearOpMode {
      */
 
     public void strafeRight (double inches) {  // given a distance, strafe the robot to the right
-        robot.frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
-        robot.backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
+        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         double circumference = Math.PI * wheelDiameter;
         double rotationsNeeded = inches / circumference;  // calculate the rotations needed based on the circumference
         int encoderDrive = (int) (rotationsNeeded * ticksPerRevolution);  // calculate the total ticks, cast to int
 
         // the front and the back are going in opposite directions and outwards, will go right
-        robot.frontLeftMotor.setTargetPosition(encoderDrive);  // set the target position
-        robot.backLeftMotor.setTargetPosition(-encoderDrive);
-        robot.frontRightMotor.setTargetPosition(-encoderDrive);
-        robot.backRightMotor.setTargetPosition(encoderDrive);
+        frontLeftMotor.setTargetPosition(encoderDrive);  // set the target position
+        backLeftMotor.setTargetPosition(-encoderDrive);
+        frontRightMotor.setTargetPosition(-encoderDrive);
+        backRightMotor.setTargetPosition(encoderDrive);
 
-        robot.frontLeftMotor.setPower(power);  // set power that will be used, use full speed
-        robot.backLeftMotor.setPower(power);
-        robot.frontRightMotor.setPower(power);
-        robot.backRightMotor.setPower(power);
+        frontLeftMotor.setPower(power);  // set power that will be used, use full speed
+        backLeftMotor.setPower(power);
+        frontRightMotor.setPower(power);
+        backRightMotor.setPower(power);
 
-        robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
-        robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        while (robot.frontLeftMotor.isBusy() || robot.backLeftMotor.isBusy() || robot.frontRightMotor.isBusy() || robot.backRightMotor.isBusy()) {  // wait
+        while (frontLeftMotor.isBusy() || backLeftMotor.isBusy() || frontRightMotor.isBusy() || backRightMotor.isBusy()) {  // wait
 
         }
 
-        robot.frontLeftMotor.setPower(0);  // reset power to 0
-        robot.backLeftMotor.setPower(0);
-        robot.frontRightMotor.setPower(0);
-        robot.backRightMotor.setPower(0);
+        frontLeftMotor.setPower(0);  // reset power to 0
+        backLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backRightMotor.setPower(0);
     }
 
     /* in mecanum wheels, if the front wheels and the back wheels are
@@ -339,73 +361,73 @@ public class VisionAutonomous extends LinearOpMode {
      to the left
      */
     public void strafeLeft (double inches) {  // given a distance, strafe the robot to the left by that much
-        robot.frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
-        robot.backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
+        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         double circumference = Math.PI * wheelDiameter;
         double rotationsNeeded = inches / circumference;  // calculate the rotations needed based on the circumference
         int encoderDrive = (int) (rotationsNeeded * ticksPerRevolution);  // calculate the total ticks, cast to int
 
         // the front and the back motors are going in opposite directions and inwards, will go left
-        robot.frontLeftMotor.setTargetPosition(-encoderDrive);  // set the target position
-        robot.backLeftMotor.setTargetPosition(encoderDrive);
-        robot.frontRightMotor.setTargetPosition(encoderDrive);
-        robot.backRightMotor.setTargetPosition(-encoderDrive);
+        frontLeftMotor.setTargetPosition(-encoderDrive);  // set the target position
+        backLeftMotor.setTargetPosition(encoderDrive);
+        frontRightMotor.setTargetPosition(encoderDrive);
+        backRightMotor.setTargetPosition(-encoderDrive);
 
-        robot.frontLeftMotor.setPower(power);  // set power that will be used, use full speed
-        robot.backLeftMotor.setPower(power);
-        robot.frontRightMotor.setPower(power);
-        robot.backRightMotor.setPower(power);
+        frontLeftMotor.setPower(power);  // set power that will be used, use full speed
+        backLeftMotor.setPower(power);
+        frontRightMotor.setPower(power);
+        backRightMotor.setPower(power);
 
-        robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
-        robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        while (robot.frontLeftMotor.isBusy() || robot.backLeftMotor.isBusy() || robot.frontRightMotor.isBusy() || robot.backRightMotor.isBusy()) {  // wait
+        while (frontLeftMotor.isBusy() || backLeftMotor.isBusy() || frontRightMotor.isBusy() || backRightMotor.isBusy()) {  // wait
             // pause while motors are running
         }
 
-        robot.frontLeftMotor.setPower(0);  // reset power to 0
-        robot.backLeftMotor.setPower(0);
-        robot.frontRightMotor.setPower(0);
-        robot.backRightMotor.setPower(0);
+        frontLeftMotor.setPower(0);  // reset power to 0
+        backLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backRightMotor.setPower(0);
     }
 
     public void rotateRight (int degrees) {
-        robot.frontLeftMotor.setPower(1);
-        robot.backLeftMotor.setPower(1);
-        robot.frontRightMotor.setPower(-1);
-        robot.backRightMotor.setPower(-1);
+        frontLeftMotor.setPower(1);
+        backLeftMotor.setPower(1);
+        frontRightMotor.setPower(-1);
+        backRightMotor.setPower(-1);
 
         sleep((int) (degrees * ROTATE_CONSTANT));
 
-        robot.frontLeftMotor.setPower(0);
-        robot.backLeftMotor.setPower(0);
-        robot.frontRightMotor.setPower(0);
-        robot.backRightMotor.setPower(0);
+        frontLeftMotor.setPower(0);
+        backLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backRightMotor.setPower(0);
     }
 
     public void rotateLeft (int degrees) {
-        robot.frontLeftMotor.setPower(-1);
-        robot.backLeftMotor.setPower(-1);
-        robot.frontRightMotor.setPower(1);
-        robot.backRightMotor.setPower(1);
+        frontLeftMotor.setPower(-1);
+        backLeftMotor.setPower(-1);
+        frontRightMotor.setPower(1);
+        backRightMotor.setPower(1);
 
         sleep((int) (degrees * ROTATE_CONSTANT));
 
-        robot.frontLeftMotor.setPower(0);
-        robot.backLeftMotor.setPower(0);
-        robot.frontRightMotor.setPower(0);
-        robot.backRightMotor.setPower(0);
+        frontLeftMotor.setPower(0);
+        backLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backRightMotor.setPower(0);
     }
 
     public void spinWheel(double seconds) {
-        robot.carouselServo.setPower(1);
+        carouselServo.setPower(1);
         sleep((int) (seconds * 1000));  // convert to milliseconds
-        robot.carouselServo.setPower(0);
+        carouselServo.setPower(0);
     }
 
     public void redRightAutonomous () {
