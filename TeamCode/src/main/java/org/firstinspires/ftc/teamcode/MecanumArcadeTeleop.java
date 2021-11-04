@@ -9,6 +9,25 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name="Mecanum Arcade TeleOp", group = "Mecanum")
 
 public class MecanumArcadeTeleop extends LinearOpMode {
+
+    public void liftRaise (double inches) { // ticks to inches
+
+        double ticks = 122.241 * inches;
+        // 288 ticks = 2.356 inches
+        // 1 tick = 0.0082 inches
+        // 1 inch = 122.241 ticks
+
+        liftMotor.setPower(.5);
+        liftMotor.setTargetPosition((int) ticks);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while (liftMotor.isBusy()) {
+
+        }
+
+        liftMotor.setPower(0);
+    }
+
     public DcMotor backLeftMotor = null;
     public DcMotor frontLeftMotor = null;
     public DcMotor backRightMotor = null;
@@ -83,10 +102,10 @@ public class MecanumArcadeTeleop extends LinearOpMode {
             }
 
             if (gamepad2.right_trigger > 0) {  // lift up
-                liftMotor.setPower(0.6);
+                liftRaise(13);
             }
             else if (gamepad2.right_bumper) {  // lift down
-                liftMotor.setPower(-0.6);
+                liftRaise(-13);
             }
             else {
                 liftMotor.setPower(0);

@@ -161,8 +161,13 @@ public class VisionAutonomous extends LinearOpMode {
      */
 
     public String sense () {
+        sleep(500);
         String position = "";
         if (tfod != null) {
+            telemetry.addData("1", 1);
+            telemetry.update();
+
+
             // getUpdatedRecognitions() will return null if no new information is available since
             // the last time that call was made.
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
@@ -184,6 +189,7 @@ public class VisionAutonomous extends LinearOpMode {
                         telemetry.addData("height", height);
                         telemetry.addData("width", width);
                         telemetry.update();
+
 
                         return Integer.toString(recognition.getImageHeight());
 

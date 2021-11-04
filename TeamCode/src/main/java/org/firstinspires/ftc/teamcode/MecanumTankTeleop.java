@@ -5,10 +5,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name = "Mecanum Tank Teleop", group = "LinearOpMode")
 
 public class MecanumTankTeleop extends LinearOpMode {
+    boolean liftActive = false;
+    ElapsedTime liftBreakout = new ElapsedTime();
 
     public DcMotor backLeftMotor = null;
     public DcMotor frontLeftMotor = null;
@@ -21,6 +24,19 @@ public class MecanumTankTeleop extends LinearOpMode {
 
     static int[] direction = {1, -1};
     static double[] speed = {1.0, 0.25};
+
+    public void liftRaise(double inches) { // ticks to inches
+        double ticks = 121.951 * inches; //not sure if this is right
+        // 288 ticks = 2.356 inches
+        // 1 tick = 0.0082 inches
+        // 1 inch = 121.951 ticks
+
+        liftMotor.setPower(.5);
+        liftMotor.setTargetPosition((int) ticks);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        liftBreakout.reset();
+        liftActive=true;
+    }
 
     public void runOpMode () {
 
@@ -98,10 +114,12 @@ public class MecanumTankTeleop extends LinearOpMode {
             }
 
             if (gamepad2.right_trigger > 0) {  // lift up
-                liftMotor.setPower(0.6);
+                liftRaise(14);
+                boxServo.setPosition(0);
             }
             else if (gamepad2.right_bumper) {  // lift down
-                liftMotor.setPower(-0.6);
+                liftRaise(-14);
+                boxServo.setPosition(1);
             }
             else {
                 liftMotor.setPower(0);
@@ -141,5 +159,8 @@ public class MecanumTankTeleop extends LinearOpMode {
                 directionPointer = (directionPointer + 1) % 2;
             }
         }
+
+
+
     }
 }
