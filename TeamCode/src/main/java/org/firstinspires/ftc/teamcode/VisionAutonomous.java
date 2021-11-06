@@ -5,29 +5,17 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+
 import java.util.List;
 
 @Autonomous(name = "Vision Robot Autonomous", group = "Concept")
 public class VisionAutonomous extends LinearOpMode {
-  /*
-   *  Note: This sample uses the all-objects Tensor Flow model (FreightFrenzy_BCDM.tflite), which contains
-   *  the following 4 detectable objects
-   *  0: Ball,
-   *  1: Cube,
-   *  2: Duck,
-   *  3: Marker (duck location tape marker)
-   *
-   *  Two additional model assets are available which only contain a subset of the objects:
-   *  FreightFrenzy_BC.tflite  0: Ball,  1: Cube
-   *  FreightFrenzy_DM.tflite  0: Duck,  1: Marker
-   *
-   */
-
     // hardware
     public DcMotor backLeftMotor = null;
     public DcMotor frontLeftMotor = null;
@@ -36,7 +24,7 @@ public class VisionAutonomous extends LinearOpMode {
     public DcMotor intakeMotor = null;
     public DcMotor liftMotor = null;
     public CRServo carouselServo = null;
-    public Servo boxServo = null;
+    public Servo boxServo = null;  // 0 = reset, 1 = flipped
 
     // motor values
     public final double ticksPerRevolution = 537.6;  // the ticks per revolution for our motors, the REV HEX Planetary 20:1
@@ -78,14 +66,15 @@ public class VisionAutonomous extends LinearOpMode {
         }
 
         int position = sense();
-
         telemetry.addData("position", position);
         sleep(5000);
+
         waitForStart();
-        
+
+
     }
 
-    public int sense () {
+    public int sense () {  // detect what position the duck is on
         sleep(100);
 
         // 0 = Left, 1 = Middle, 2 = Right
@@ -105,6 +94,8 @@ public class VisionAutonomous extends LinearOpMode {
 
                     telemetry.update();
 
+                    sleep(10000);
+
                     if (rightPosition < leftLine) {  // the duck is on the leftmost position
                         returnValue = 0;
                         return returnValue;
@@ -121,6 +112,39 @@ public class VisionAutonomous extends LinearOpMode {
             }
         }
         return returnValue;
+    }
+
+    public void liftHighest () {  // raises the lift to the highest level and deposit
+        liftRaise(10);
+        boxServo.setPosition(0.5);
+        sleep(200);
+    }
+
+    public void liftMiddle () {  // raises the lift to the middle level and deposit
+        liftRaise(5);
+        boxServo.setPosition(.5);
+        sleep(200);
+    }
+
+    public void liftLowest () {  // raises the lift to the lowest level and deposit
+        liftRaise(0);
+        boxServo.setPosition(.5);
+        sleep(200);
+    }
+
+    public void liftRaise(double inches) { // ticks to inches
+        double ticks = 121.951 * inches;
+        // 288 ticks = 2.356 inches
+        // 1 tick = 0.0082 inches
+        // 1 inch = 121.951 ticks
+
+        liftMotor.setPower(1);
+        liftMotor.setTargetPosition((int) ticks);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while (liftMotor.isBusy()) {
+
+        }
     }
 
     public void driveForward (double inches) {  // drives the robot forward given a distance
