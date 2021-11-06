@@ -52,7 +52,12 @@ public class RobotAutonomous extends LinearOpMode {
 
 
         while (frontLeftMotor.isBusy() || backLeftMotor.isBusy() || frontRightMotor.isBusy() || backRightMotor.isBusy()) {  // wait
+            telemetry.addData("Front Left Motor", frontLeftMotor.getCurrentPosition());
+            telemetry.addData("Front Right Motor", frontRightMotor.getCurrentPosition());
+            telemetry.addData("Back Left Motor", backLeftMotor.getCurrentPosition());
+            telemetry.addData("Back Right Motor", backRightMotor.getCurrentPosition());
 
+            telemetry.update();
         }
 
         frontLeftMotor.setPower(0);  // reset power to 0
@@ -87,7 +92,12 @@ public class RobotAutonomous extends LinearOpMode {
         backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         while (frontLeftMotor.isBusy() || backLeftMotor.isBusy() || frontRightMotor.isBusy() || backRightMotor.isBusy()) {  // wait
+            telemetry.addData("Front Left Motor", frontLeftMotor.getCurrentPosition());
+            telemetry.addData("Front Right Motor", frontRightMotor.getCurrentPosition());
+            telemetry.addData("Back Left Motor", backLeftMotor.getCurrentPosition());
+            telemetry.addData("Back Right Motor", backRightMotor.getCurrentPosition());
 
+            telemetry.update();
         }
 
         frontLeftMotor.setPower(0);  // reset power to 0
