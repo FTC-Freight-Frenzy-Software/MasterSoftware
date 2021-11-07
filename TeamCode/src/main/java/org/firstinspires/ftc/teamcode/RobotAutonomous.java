@@ -28,7 +28,7 @@ public class RobotAutonomous extends LinearOpMode {
     public Servo boxServo = null;
 
     // vision values
-    static final int line = 100;
+    static final int line = 240;
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
             "Ball",
@@ -101,7 +101,6 @@ public class RobotAutonomous extends LinearOpMode {
         rotateRight(20);
         strafeLeft(20);
         driveBackwards(40);
-
     }
 
     public void resetLift () {
@@ -365,10 +364,18 @@ public class RobotAutonomous extends LinearOpMode {
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
-                sleep(2000);
+                sleep(3000);
+                updatedRecognitions = tfod.getUpdatedRecognitions();
+
+                if (updatedRecognitions.size() == 0) {  // no recognitions, duck is on rightmost
+                    return returnValue;
+                }
+
+                /*
                 while (updatedRecognitions == null || updatedRecognitions.size() == 0) {
                     updatedRecognitions = tfod.getUpdatedRecognitions();
                 }
+                 */
                 
                 sleep(1000);
 
@@ -380,11 +387,11 @@ public class RobotAutonomous extends LinearOpMode {
                     telemetry.update();
                     sleep(10000);
 
-                    if (rightPosition < line) {  // the duck is on the leftmost position
+                    if (rightPosition > line) {  // the duck is on the leftmost position
                         returnValue = 0;
                         return returnValue;
                     }
-                    else {
+                    else {  // middle position
                         returnValue = 1;
                         return returnValue;
                     }
