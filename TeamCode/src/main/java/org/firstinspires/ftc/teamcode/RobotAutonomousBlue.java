@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -14,9 +15,9 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-// test 
-@Autonomous (name = "Robot Autonomous", group = "Autonomous")
-public class RobotAutonomous extends LinearOpMode {
+// test
+@Autonomous (name = "Robot Autonomous Blue", group = "Autonomous")
+public class RobotAutonomousBlue extends LinearOpMode {
 
     public DcMotor backLeftMotor = null;
     public DcMotor frontLeftMotor = null;
@@ -28,7 +29,7 @@ public class RobotAutonomous extends LinearOpMode {
     public Servo boxServo = null;
 
     // vision values
-    static final int line = 240;
+    static final int line = 280;
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
             "Ball",
@@ -76,8 +77,8 @@ public class RobotAutonomous extends LinearOpMode {
         waitForStart();
 
         driveBackwards(10);  // pull out from wall
-        strafeLeft(31);  // align with shipping hub
-        driveBackwards(12.75);  // reach shipping hub
+        strafeRight(27);  // align with shipping hub
+        driveBackwards(10);  // reach shipping hub
 
         if (vision == 0) {  // lowest
             liftLowest();
@@ -91,16 +92,17 @@ public class RobotAutonomous extends LinearOpMode {
             liftHighest();
             sleep(1000);
         }
+        rotateLeft(90);
+        strafeRight(16);  // align with carousel
+        driveForward(36);  // drive to carousel
+        rotateRight(48);
+        driveForward(8);
         resetLift();
-        rotateRight(90);
-        strafeLeft(22);  // align with carousel
-
-        driveForward(47);  // drive to carousel
-        spinCarousel(3);
-        driveBackwards(60);
-        rotateRight(20);
-        strafeLeft(20);
-        driveBackwards(40);
+        spinCarousel(5);
+        driveBackwards(8);
+        rotateLeft(55);
+        strafeRight(12);
+        driveBackwards(80);
     }
 
     public void resetLift () {
@@ -154,7 +156,7 @@ public class RobotAutonomous extends LinearOpMode {
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
 
-        sleep(300);
+        sleep(350);
     }
 
     public void driveBackwards (double inches) {  // given a distance, drive the robot backwards
@@ -183,11 +185,6 @@ public class RobotAutonomous extends LinearOpMode {
         backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         while (frontLeftMotor.isBusy() && backLeftMotor.isBusy() && frontRightMotor.isBusy() && backRightMotor.isBusy()) {  // wait
-            telemetry.addData("Front Left Motor", frontLeftMotor.getCurrentPosition());
-            telemetry.addData("Front Right Motor", frontRightMotor.getCurrentPosition());
-            telemetry.addData("Back Left Motor", backLeftMotor.getCurrentPosition());
-            telemetry.addData("Back Right Motor", backRightMotor.getCurrentPosition());
-
             telemetry.update();
         }
 
@@ -352,32 +349,32 @@ public class RobotAutonomous extends LinearOpMode {
     }
 
     public void spinCarousel(double seconds) {
-        carouselServo.setPower(-1);
+        carouselServo.setPower(0.7);
         sleep((int) (seconds * 1000));  // convert to milliseconds
         carouselServo.setPower(0);
     }
 
+    public ElapsedTime visionTime = new ElapsedTime();
+
     public int sense () {  // detect what position the duck is on
+        visionTime.reset();
         // 0 = Left, 1 = Middle, 2 = Right
         int returnValue = 2;
 
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
-                sleep(3000);
+                sleep(500);
                 updatedRecognitions = tfod.getUpdatedRecognitions();
 
-                if (updatedRecognitions.size() == 0) {  // no recognitions, duck is on rightmost
-                    return returnValue;
+                while (updatedRecognitions == null || updatedRecognitions.size() == 0) {  // no recognitions, duck is on rightmost
+                    updatedRecognitions = tfod.getUpdatedRecognitions();
+                    if (visionTime.seconds() > 5) {
+                        return 2;
+                    }
                 }
 
-                /*
-                while (updatedRecognitions == null || updatedRecognitions.size() == 0) {
-                    updatedRecognitions = tfod.getUpdatedRecognitions();
-                }
-                 */
-                
-                sleep(1000);
+                sleep(200);
 
                 for (Recognition recognition : updatedRecognitions) {
                     float leftPosition = recognition.getLeft();
@@ -385,9 +382,10 @@ public class RobotAutonomous extends LinearOpMode {
                     telemetry.addData("left", leftPosition);
                     telemetry.addData("right", rightPosition);
                     telemetry.update();
-                    sleep(10000);
 
-                    if (rightPosition > line) {  // the duck is on the leftmost position
+                    sleep(2000);
+
+                    if (rightPosition < line) {  // the duck is on the leftmost position
                         returnValue = 0;
                         return returnValue;
                     }
@@ -426,13 +424,13 @@ public class RobotAutonomous extends LinearOpMode {
 
     public void liftMiddle () {  // raises the lift to the middle level and deposit
         liftRaise(5);
-        boxServo.setPosition(1);
+        boxServo.setPosition(0);
         sleep(1000);
     }
 
     public void liftLowest () {  // raises the lift to the lowest level and deposit
         liftRaise(0);
-        boxServo.setPosition(1);
+        boxServo.setPosition(0);
         sleep(1000);
     }
 
