@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -15,10 +16,11 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-// test 
-@Autonomous (name = "Robot Autonomous Red", group = "Autonomous")
-public class RobotAutonomousRed extends LinearOpMode {
+// test
+@Autonomous (name = "Red Right", group = "Autonomous")
+public class RobotAutonomousRedRight extends LinearOpMode {
 
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(14, 0, 13, 14.4);
     public DcMotor backLeftMotor = null;
     public DcMotor frontLeftMotor = null;
     public DcMotor backRightMotor = null;
@@ -29,7 +31,7 @@ public class RobotAutonomousRed extends LinearOpMode {
     public Servo boxServo = null;
 
     // vision values
-    static final int line = 300;
+    static final int line = 280;
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
             "Ball",
@@ -62,6 +64,7 @@ public class RobotAutonomousRed extends LinearOpMode {
         backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
         liftMotor.setDirection(DcMotor.Direction.REVERSE);
 
+        /*
         initVuforia();
         initTfod();
 
@@ -74,12 +77,17 @@ public class RobotAutonomousRed extends LinearOpMode {
         telemetry.addData("vision", vision);
         telemetry.update();
 
+         */
+
+        int vision = 2;
         waitForStart();
 
-        driveBackwards(10);  // pull out from wall
-        strafeLeft(27);  // align with shipping hub
-        driveBackwards(10.5);  // reach shipping hub
+        driveBackwards(10);  // pull out
+        rotateLeft(180);  // rotate towards hub
+        strafeLeft(10);  // line up with hub
+        driveForward(3, 0.6);  // fully reach hub
 
+        /*
         if (vision == 0) {  // lowest
             liftLowest();
             sleep(1000);
@@ -92,16 +100,8 @@ public class RobotAutonomousRed extends LinearOpMode {
             liftHighest();
             sleep(1000);
         }
-        rotateRight(90);
-        strafeLeft(17);  // align with carousel
+         */
 
-        driveForward(36);  // drive to carousel
-        resetLift();
-        spinCarousel(5);
-        driveBackwards(55);
-        //rotateRight(20);
-        strafeLeft(20);
-        driveBackwards(32);
     }
 
     public void resetLift () {
@@ -115,7 +115,7 @@ public class RobotAutonomousRed extends LinearOpMode {
         boxServo.setPosition(1);
     }
 
-    public void driveForward (double inches) {  // drives the robot forward given a distance
+    public void driveForward (double inches, double speed) {  // drives the robot forward given a distance
         frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
         backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // TRY NEW ENCODER CABLE
@@ -130,10 +130,10 @@ public class RobotAutonomousRed extends LinearOpMode {
         frontRightMotor.setTargetPosition(encoderDrive);
         backRightMotor.setTargetPosition(encoderDrive);
 
-        frontLeftMotor.setPower(power);  // set power that will be used, use full speed
-        backLeftMotor.setPower(power);
-        frontRightMotor.setPower(power);
-        backRightMotor.setPower(power);
+        frontLeftMotor.setPower(speed);  // set power that will be used, use full speed
+        backLeftMotor.setPower(speed);
+        frontRightMotor.setPower(speed);
+        backRightMotor.setPower(speed);
 
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
         backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -154,8 +154,6 @@ public class RobotAutonomousRed extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        sleep(350);
     }
 
     public void driveBackwards (double inches) {  // given a distance, drive the robot backwards
@@ -184,11 +182,6 @@ public class RobotAutonomousRed extends LinearOpMode {
         backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         while (frontLeftMotor.isBusy() && backLeftMotor.isBusy() && frontRightMotor.isBusy() && backRightMotor.isBusy()) {  // wait
-            telemetry.addData("Front Left Motor", frontLeftMotor.getCurrentPosition());
-            telemetry.addData("Front Right Motor", frontRightMotor.getCurrentPosition());
-            telemetry.addData("Back Left Motor", backLeftMotor.getCurrentPosition());
-            telemetry.addData("Back Right Motor", backRightMotor.getCurrentPosition());
-
             telemetry.update();
         }
 
@@ -196,8 +189,6 @@ public class RobotAutonomousRed extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        sleep(300);
     }
 
     /* in mecanum wheels, if the front wheels and the back wheels are
@@ -239,8 +230,6 @@ public class RobotAutonomousRed extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        sleep(300);
     }
 
     /* in mecanum wheels, if the front wheels and the back wheels are
@@ -281,8 +270,6 @@ public class RobotAutonomousRed extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        sleep(300);
     }
 
     public void rotateRight (int degrees) {
@@ -315,8 +302,6 @@ public class RobotAutonomousRed extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        sleep(300);
     }
 
     public void rotateLeft (int degrees) {
@@ -349,11 +334,10 @@ public class RobotAutonomousRed extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-        sleep(300);
     }
 
     public void spinCarousel(double seconds) {
-        carouselServo.setPower(-0.7);
+        carouselServo.setPower(0.7);
         sleep((int) (seconds * 1000));  // convert to milliseconds
         carouselServo.setPower(0);
     }
@@ -377,7 +361,7 @@ public class RobotAutonomousRed extends LinearOpMode {
                         return 2;
                     }
                 }
-                
+
                 sleep(200);
 
                 for (Recognition recognition : updatedRecognitions) {
@@ -447,9 +431,5 @@ public class RobotAutonomousRed extends LinearOpMode {
         liftMotor.setPower(1);
         liftMotor.setTargetPosition((int) ticks);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        while (liftMotor.isBusy()) {
-
-        }
     }
 }

@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -15,21 +17,25 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-// test
-@Autonomous (name = "Robot Autonomous Blue", group = "Autonomous")
-public class RobotAutonomousBlue extends LinearOpMode {
+// test 
+@Autonomous (name = "Blue Left", group = "Autonomous")
+public class RobotAutonomousBlueLeft extends LinearOpMode {
 
-    public DcMotor backLeftMotor = null;
-    public DcMotor frontLeftMotor = null;
-    public DcMotor backRightMotor = null;
-    public DcMotor frontRightMotor = null;
+    public static PIDCoefficients MOTOR_VELO_PID = new PIDCoefficients(9, 0, 0);
+
+    public DcMotorEx backLeftMotor = null;
+    public DcMotorEx frontLeftMotor = null;
+    public DcMotorEx backRightMotor = null;
+    public DcMotorEx frontRightMotor = null;
     public DcMotor intakeMotor = null;
     public DcMotor liftMotor = null;
     public CRServo carouselServo = null;
     public Servo boxServo = null;
 
+
+
     // vision values
-    static final int line = 280;
+    static final int line = 300;
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
             "Ball",
@@ -44,14 +50,19 @@ public class RobotAutonomousBlue extends LinearOpMode {
     // motor values
     public final double ticksPerRevolution = 560;  // the ticks per revolution for our motors, the REV HEX Planetary 20:1
     public final double wheelDiameter = 3.77953;  // small mecanum wheels are 75 millimeters in diameter
-    public final double power = 1.0;
+    public final double power = 0.8;
     public final double ROTATE_CONSTANT = 9;
 
     public void runOpMode() throws InterruptedException {
-        backLeftMotor = hardwareMap.get(DcMotor.class, "backLeftMotor");
-        frontLeftMotor = hardwareMap.get(DcMotor.class, "frontLeftMotor");
-        backRightMotor = hardwareMap.get(DcMotor.class, "backRightMotor");
-        frontRightMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
+        backLeftMotor = hardwareMap.get(DcMotorEx.class, "backLeftMotor");
+        frontLeftMotor = hardwareMap.get(DcMotorEx.class, "frontLeftMotor");
+        backRightMotor = hardwareMap.get(DcMotorEx.class, "backRightMotor");
+        frontRightMotor = hardwareMap.get(DcMotorEx.class, "frontRightMotor");
+
+        backLeftMotor.setPIDCoefficients(DcMotorEx.RunMode.RUN_TO_POSITION, MOTOR_VELO_PID);
+        frontLeftMotor.setPIDCoefficients(DcMotorEx.RunMode.RUN_TO_POSITION, MOTOR_VELO_PID);
+        backRightMotor.setPIDCoefficients(DcMotorEx.RunMode.RUN_TO_POSITION, MOTOR_VELO_PID);
+        frontRightMotor.setPIDCoefficients(DcMotorEx.RunMode.RUN_TO_POSITION, MOTOR_VELO_PID);
 
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
         liftMotor = hardwareMap.get(DcMotor.class, "liftMotor");
@@ -60,8 +71,8 @@ public class RobotAutonomousBlue extends LinearOpMode {
 
         frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
-        liftMotor.setDirection(DcMotor.Direction.REVERSE);
 
+        /*
         initVuforia();
         initTfod();
 
@@ -70,39 +81,94 @@ public class RobotAutonomousBlue extends LinearOpMode {
             tfod.setZoom(1.05, 16.0/7.0);
         }
 
+
         int vision = sense();
         telemetry.addData("vision", vision);
         telemetry.update();
 
+         */
+
+        int vision = 2;
+
         waitForStart();
 
-        driveBackwards(10);  // pull out from wall
-        strafeRight(27);  // align with shipping hub
-        driveBackwards(10);  // reach shipping hub
+        // start of pattern
 
+        // start lifting when moving
         if (vision == 0) {  // lowest
-            liftLowest();
-            sleep(1000);
+            liftRaise(0);
         }
         else if (vision == 1) {  // middle
-            liftMiddle();
-            sleep(1000);
+            liftRaise(5);
         }
         else {  // highest
-            liftHighest();
-            sleep(1000);
+            liftRaise(10.5);
         }
-        rotateLeft(90);
-        strafeRight(16);  // align with carousel
-        driveForward(36);  // drive to carousel
-        rotateRight(48);
-        driveForward(8);
+
+        driveBackwards(6);  // pull out
+        sleep(100);
+        strafeLeft(22);  // line up with hub
+        sleep(100);
+        driveBackwards(10.5);  // fully reach hub
+        sleep(100);
+        boxServo.setPosition(0);  // drop
+        sleep(800);
         resetLift();
-        spinCarousel(5);
-        driveBackwards(8);
-        rotateLeft(55);
-        strafeRight(12);
-        driveBackwards(80);
+
+
+        driveForward(8, 1);  // pull away from hub
+        sleep(100);
+        rotateRight(90);  // face direction of cubes
+        sleep(100);
+        strafeLeft(17);  // hit wall
+        sleep(100);
+
+        driveForward(30, 1);
+        intakeMotor.setPower(1);  // keep on intaking
+        driveForward(22, 1);
+        driveBackwards(50);
+        intakeMotor.setPower(0);
+        liftRaise(10.5);
+        strafeRight(6);
+        sleep(100);
+        rotateLeft(90);
+        sleep(100);
+        driveBackwards(18);
+        sleep(200);
+        boxServo.setPosition(0);  // drop
+        sleep(600);
+        resetLift();
+        driveForward(10, 1);
+        sleep(100);
+        rotateRight(90);
+        sleep(100);
+        strafeLeft(26);
+        sleep(100);
+
+        /*
+        driveForward(30, 1);
+        intakeMotor.setPower(1);  // keep on intaking
+        driveForward(22, 1);
+        driveBackwards(50);
+        intakeMotor.setPower(0);
+        liftRaise(10.5);
+        strafeRight(6);
+        sleep(100);
+        rotateLeft(90);
+        sleep(100);
+        driveBackwards(17);
+        sleep(100);
+        boxServo.setPosition(0);  // drop
+        sleep(600);
+        resetLift();
+        driveForward(10, 1);
+        sleep(200);
+        rotateRight(90);
+        sleep(200);
+        strafeLeft(26);
+        sleep(100);
+
+         */
     }
 
     public void resetLift () {
@@ -116,7 +182,7 @@ public class RobotAutonomousBlue extends LinearOpMode {
         boxServo.setPosition(1);
     }
 
-    public void driveForward (double inches) {  // drives the robot forward given a distance
+    public void driveForward (double inches, double speed) {  // drives the robot forward given a distance
         frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
         backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // TRY NEW ENCODER CABLE
@@ -131,10 +197,10 @@ public class RobotAutonomousBlue extends LinearOpMode {
         frontRightMotor.setTargetPosition(encoderDrive);
         backRightMotor.setTargetPosition(encoderDrive);
 
-        frontLeftMotor.setPower(power);  // set power that will be used, use full speed
-        backLeftMotor.setPower(power);
-        frontRightMotor.setPower(power);
-        backRightMotor.setPower(power);
+        frontLeftMotor.setPower(speed);  // set power that will be used, use full speed
+        backLeftMotor.setPower(speed);
+        frontRightMotor.setPower(speed);
+        backRightMotor.setPower(speed);
 
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);  // run to position
         backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -155,8 +221,6 @@ public class RobotAutonomousBlue extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        sleep(350);
     }
 
     public void driveBackwards (double inches) {  // given a distance, drive the robot backwards
@@ -185,6 +249,11 @@ public class RobotAutonomousBlue extends LinearOpMode {
         backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         while (frontLeftMotor.isBusy() && backLeftMotor.isBusy() && frontRightMotor.isBusy() && backRightMotor.isBusy()) {  // wait
+            telemetry.addData("Front Left Motor", frontLeftMotor.getCurrentPosition());
+            telemetry.addData("Front Right Motor", frontRightMotor.getCurrentPosition());
+            telemetry.addData("Back Left Motor", backLeftMotor.getCurrentPosition());
+            telemetry.addData("Back Right Motor", backRightMotor.getCurrentPosition());
+
             telemetry.update();
         }
 
@@ -192,8 +261,6 @@ public class RobotAutonomousBlue extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        sleep(300);
     }
 
     /* in mecanum wheels, if the front wheels and the back wheels are
@@ -227,7 +294,7 @@ public class RobotAutonomousBlue extends LinearOpMode {
         frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        while (frontLeftMotor.isBusy() && backLeftMotor.isBusy() && frontRightMotor.isBusy() && backRightMotor.isBusy()) {  // wait
+        while (frontLeftMotor.isBusy() || backLeftMotor.isBusy() || frontRightMotor.isBusy() || backRightMotor.isBusy()) {  // wait
 
         }
 
@@ -236,7 +303,6 @@ public class RobotAutonomousBlue extends LinearOpMode {
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
 
-        sleep(300);
     }
 
     /* in mecanum wheels, if the front wheels and the back wheels are
@@ -277,8 +343,6 @@ public class RobotAutonomousBlue extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        sleep(300);
     }
 
     public void rotateRight (int degrees) {
@@ -303,7 +367,7 @@ public class RobotAutonomousBlue extends LinearOpMode {
         frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        while (frontLeftMotor.isBusy() || backLeftMotor.isBusy() || frontRightMotor.isBusy() || backRightMotor.isBusy()) {  // wait
+        while (frontLeftMotor.isBusy() && backLeftMotor.isBusy() && frontRightMotor.isBusy() && backRightMotor.isBusy()) {  // wait
             // pause while motors are running
         }
 
@@ -311,8 +375,6 @@ public class RobotAutonomousBlue extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        sleep(300);
     }
 
     public void rotateLeft (int degrees) {
@@ -345,11 +407,10 @@ public class RobotAutonomousBlue extends LinearOpMode {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-        sleep(300);
     }
 
     public void spinCarousel(double seconds) {
-        carouselServo.setPower(0.7);
+        carouselServo.setPower(-0.7);
         sleep((int) (seconds * 1000));  // convert to milliseconds
         carouselServo.setPower(0);
     }
@@ -373,7 +434,7 @@ public class RobotAutonomousBlue extends LinearOpMode {
                         return 2;
                     }
                 }
-
+                
                 sleep(200);
 
                 for (Recognition recognition : updatedRecognitions) {
@@ -435,7 +496,10 @@ public class RobotAutonomousBlue extends LinearOpMode {
     }
 
     public void liftRaise(double inches) { // ticks to inches
-        double ticks = 121.951 * inches;
+        double winchSize = 2.0;
+        double ticksPerRotation = 529.2;
+        double ticks = (1/((winchSize * Math.PI)/ticksPerRotation)) * inches; //not sure if this is right
+        // Core Hex Motor:
         // 288 ticks = 2.356 inches
         // 1 tick = 0.0082 inches
         // 1 inch = 121.951 ticks
@@ -443,9 +507,5 @@ public class RobotAutonomousBlue extends LinearOpMode {
         liftMotor.setPower(1);
         liftMotor.setTargetPosition((int) ticks);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        while (liftMotor.isBusy()) {
-
-        }
     }
 }
