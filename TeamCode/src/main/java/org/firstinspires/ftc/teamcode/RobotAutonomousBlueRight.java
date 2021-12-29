@@ -63,52 +63,44 @@ public class RobotAutonomousBlueRight extends LinearOpMode {
 
         //initVuforia();
         //initTfod();
+        
+        waitForStart();
 
         if (tfod != null) {
             tfod.activate();
-            tfod.setZoom(1.05, 16.0/7.0);
+            tfod.setZoom(1.05, 16.0 / 7.0);
         }
 
-        int vision = 2;
-        /*
         int vision = sense();
         telemetry.addData("vision", vision);
         telemetry.update();
 
-         */
-
-        waitForStart();
-
-        /*
-        // raise lift while moving
-        if (vision == 0) {  // lowest
-            liftRaise(0);
-        }
-        else if (vision == 1) {  // middle
-            liftRaise(5);
-        }
-        else {  // highest
-            liftRaise(10.5);
-        }
-         */
-
-        driveBackwards(34);  // pull out from wall
-        sleep(500);
+        // go far route to avoid collision with alliance partner
+        driveBackwards(24);  // pull out from wall
+        strafeLeft(24);
+        driveBackwards(24);  // horizontally line with shipping hub
         rotateLeft(90);
+        driveBackwards(36);  // reach shipping hub
+
         sleep(500);
-        driveBackwards(5.5);  // go to carousel
-        //boxServo.setPosition(0);  // drop
-        sleep(2000);
-        driveForward(7, 0.6);
+        if (vision == 0) {  // deliver pre-load to the correct level
+            liftHighest();
+        }
+        else if (vision == 1) {
+            liftMiddle();
+        }
+        else {  // vision == 2
+            liftLowest();
+        }
+        boxServo.setPosition(0);  // drop
         sleep(500);
-        rotateRight(63);  // angle towards carousel
-        sleep(500);
-        driveForward(38, 0.4);  // reach carousel
-        spinCarousel(4);
-        driveBackwards(7);
-        rotateLeft(58);
-        driveForward(7, 0.4);
-        strafeLeft(17);
+
+        driveForward(36, 1);  // drive out
+        rotateRight(90);  // rotate towards carousel
+        driveForward(43, 1);  // drive towards carousel
+        strafeRight(6);  // strafe to create angle with carousel
+        rotateLeft(25);  // align with carousel
+        driveForward(5, 1);  // reach carousel
     }
 
     public void resetLift () {
@@ -206,7 +198,9 @@ public class RobotAutonomousBlueRight extends LinearOpMode {
     /* in mecanum wheels, if the front wheels and the back wheels are
      going in opposite directions and outwards, the robot goes
      to the right
+
      */
+
 
     public void strafeRight (double inches) {  // given a distance, strafe the robot to the right
         frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // reset encoders to zero
