@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import java.util.List;
 
 // test
-@Autonomous (name = "Red Left", group = "Autonomous")
+@Autonomous(name = "Red Left", group = "Autonomous")
 public class RobotAutonomousRedLeft extends LinearOpMode {
 
     public DcMotor backLeftMotor = null;
@@ -25,8 +25,9 @@ public class RobotAutonomousRedLeft extends LinearOpMode {
     public DcMotor frontRightMotor = null;
     public DcMotor intakeMotor = null;
     public DcMotor liftMotor = null;
-    public CRServo carouselServo = null;
+    public DcMotor carouselMotor = null;
     public Servo boxServo = null;
+    static final int delay = 200;
 
     // vision values
     static final int line = 280;
@@ -55,7 +56,8 @@ public class RobotAutonomousRedLeft extends LinearOpMode {
 
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
         liftMotor = hardwareMap.get(DcMotor.class, "liftMotor");
-        carouselServo = hardwareMap.get(CRServo.class, "carouselServo");
+        liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        carouselMotor = hardwareMap.get(DcMotor.class, "carouselMotor");
         boxServo = hardwareMap.get(Servo.class, "boxServo");
 
         frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -65,54 +67,86 @@ public class RobotAutonomousRedLeft extends LinearOpMode {
         //initVuforia();
         //initTfod();
 
-        /*
+        waitForStart();
+
         if (tfod != null) {
             tfod.activate();
-            tfod.setZoom(1.05, 16.0/7.0);
+            tfod.setZoom(1.05, 16.0 / 7.0);
         }
 
+        /*
         int vision = sense();
+
+         */
+
+        int vision = 0;
         telemetry.addData("vision", vision);
         telemetry.update();
 
-        waitForStart();
+        // go far route to avoid collision with alliance partner
 
 
-         */
+        driveBackwards(6);  // pull out from wall
+        sleep(delay);
 
-        int vision = 2;
+        strafeRight(20);
+        sleep(delay);
 
-        waitForStart();
+        driveBackwards(33.5);  // horizontally line with shipping hub
+        sleep(delay);
 
-        /*
-        // raise lift while moving
-        if (vision == 0) {  // lowest
-            liftRaise(0);
+        rotateRight(93);
+        sleep(delay);
+
+        driveBackwards(24);  // reach shipping hub
+        sleep(delay);
+
+        rotateRight(26);
+        sleep(delay);
+
+        if (vision == 0) {  // deliver pre-load to the correct level
+            liftHighest();
         }
-        else if (vision == 1) {  // middle
-            liftRaise(5);
+        else if (vision == 1) {
+            liftMiddle();
         }
-        else {  // highest
-            liftRaise(10.5);
+        else {  // vision == 2
+            liftLowest();
         }
-         */
 
-        driveBackwards(34);  // pull out from wall
-        sleep(500);
-        rotateRight(90);
-        sleep(500);
-        driveBackwards(5.5);  // go to carousel
-        //boxServo.setPosition(0);  // drop
-        sleep(2000);
-        driveForward(7, 0.6);
-        rotateLeft(53);  // angle towards carousel
-        driveForward(38, 0.4);  // reach carousel
-        spinCarousel(4);
-        driveBackwards(7);
-        rotateRight(58);
-        driveForward(5, 0.4);
-        strafeRight(15);
+        sleep(1500);
+        resetLift();
 
+        rotateLeft(25);
+        sleep(delay);
+
+        driveForward(19, 1);
+        sleep(delay);
+
+        rotateLeft(96);
+        sleep(delay);
+
+        driveForward(30, 1);
+        sleep(delay);
+
+        strafeLeft(8);
+        sleep(200);
+
+        rotateRight(80);
+        sleep(200);
+
+        driveForward(10, 0.7);
+        sleep(200);
+
+        spinCarousel(3);
+
+        driveBackwards(3);
+
+        rotateRight(25);
+
+        strafeRight(24);
+
+        driveForward(10, 0.7);
     }
 
     public void resetLift () {
@@ -348,9 +382,9 @@ public class RobotAutonomousRedLeft extends LinearOpMode {
     }
 
     public void spinCarousel(double seconds) {
-        carouselServo.setPower(-0.7);
+        carouselMotor.setPower(-1);
         sleep((int) (seconds * 1000));  // convert to milliseconds
-        carouselServo.setPower(0);
+        carouselMotor.setPower(0);
     }
 
     public ElapsedTime visionTime = new ElapsedTime();
@@ -416,14 +450,14 @@ public class RobotAutonomousRedLeft extends LinearOpMode {
     }
 
     public void liftHighest () {  // raises the lift to the highest level and deposit
-        liftRaise(10.5);
+        liftRaise(8);
         boxServo.setPosition(0);
         sleep(1000);
     }
 
     public void liftMiddle () {  // raises the lift to the middle level and deposit
         liftRaise(5);
-        boxServo.setPosition(0);
+        boxServo.setPosition(4);
         sleep(1000);
     }
 
@@ -434,13 +468,21 @@ public class RobotAutonomousRedLeft extends LinearOpMode {
     }
 
     public void liftRaise(double inches) { // ticks to inches
-        double ticks = 121.951 * inches;
+        double ticks = 121 * inches;
+        telemetry.addData("ticks", ticks);
+        telemetry.update();
         // 288 ticks = 2.356 inches
         // 1 tick = 0.0082 inches
         // 1 inch = 121.951 ticks
 
         liftMotor.setPower(1);
+        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setTargetPosition((int) ticks);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while (liftMotor.isBusy()) {
+            telemetry.addData("position", liftMotor.getCurrentPosition());
+            telemetry.update();
+        }
     }
 }
